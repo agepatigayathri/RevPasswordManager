@@ -1,0 +1,70 @@
+package com.revature.DAO;
+
+
+import java.sql.*;
+import java.time.LocalDateTime;
+
+import com.revature.util.DBConnection;
+
+public class VerificationCodeDAO {
+
+    public boolean saveCode(int userId, String code, LocalDateTime expiry) {
+
+        String sql = "INSERT INTO verification_codes " +
+                     "(user_id, code, expiry_time) VALUES (?, ?, ?)";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            ps.setString(2, code);
+            ps.setTimestamp(3, Timestamp.valueOf(expiry));
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean verifyCode(int userId, String code) {
+
+        String sql = "SELECT id, expiry_time, is_used FROM verification_codes " +
+                     "WHERE user_id=? AND code=?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
+            ps.setString(2, code);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                boolean used = rs.getBoolean("is_used");
+                LocalDateTime expiry =
+                        rs.getTimestamp("expiry_time").toLocalDateTime();
+
+                if (used || expiry.isBefore(LocalDateTime.now())) {
+                    return false;
+                }
+
+                // mark as used
+                String update =
+                        "UPDATE verification_codes SET is_used=TRUE WHERE id=?";
+                PreparedStatement ups =
+                        con.prepareStatement(update);
+                ups.setInt(1, rs.getInt("id"));
+                ups.executeUpdate();
+
+                return true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+}
+

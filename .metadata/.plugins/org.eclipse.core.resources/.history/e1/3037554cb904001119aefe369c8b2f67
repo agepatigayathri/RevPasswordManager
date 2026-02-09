@@ -1,0 +1,36 @@
+package com.revature.service;
+
+
+import com.revature.util.PasswordUtil;
+
+public class SecurityService {
+
+    private SecurityDAO securityDAO = new SecurityDAO();
+
+    // SAVE answer during registration
+    public boolean saveSecurityAnswer(int userId, int questionId, String answer) {
+        return securityDAO.saveAnswer(
+                userId,
+                questionId,
+                PasswordUtil.encrypt(answer)
+        );
+    }
+
+    // VERIFY answer during forgot password
+    public boolean verifySecurityAnswer(int userId, int questionId, String answer) {
+        return securityDAO.verifyAnswer(
+                userId,
+                questionId,
+                PasswordUtil.encrypt(answer)
+        );
+    }
+ // -------- UPDATE SECURITY ANSWER --------
+    public boolean updateSecurityAnswer(int userId, int questionId, String newAnswer) {
+        return securityDAO.updateSecurityAnswer(
+                userId,
+                questionId,
+                PasswordUtil.encrypt(newAnswer)
+        );
+    }
+
+}

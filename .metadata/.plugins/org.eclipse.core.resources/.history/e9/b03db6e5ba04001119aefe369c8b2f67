@@ -1,0 +1,135 @@
+package com.revature.service;
+
+//import java.lang.System.Logger;
+import java.util.List;
+
+import com.RevPasswordManager.DAO.PasswordDAO;
+import com.RevPasswordManager.Model.PasswordEntry;
+import com.RevPasswordManager.Util.PasswordGeneratorUtil;
+import com.RevPasswordManager.Util.PasswordUtil;
+
+public class PasswordService {
+
+    // -------- DAO --------
+    private PasswordDAO passwordDAO = new PasswordDAO();
+
+    // -------- ADD PASSWORD --------
+    public boolean addPassword(
+            int userId,
+            String accountName,
+            String username,
+            String password) {
+
+        PasswordEntry entry = new PasswordEntry();
+        entry.setUserId(userId);
+        entry.setAccountName(accountName);
+        entry.setUsername(username);
+        entry.setPassword(PasswordUtil.encrypt(password));
+
+        boolean result = passwordDAO.addPassword(entry);
+
+        if (result) {
+            System.out.println("Password added for userId: " + userId +
+                               ", account: " + accountName);
+        } else {
+            System.out.println("Failed to add password for userId: " + userId +
+                               ", account: " + accountName);
+        }
+
+        return result;
+    }
+
+    // -------- VIEW ALL PASSWORDS --------
+    public List<PasswordEntry> getAllPasswords(int userId) {
+
+        List<PasswordEntry> list = passwordDAO.getAllPasswords(userId);
+
+        System.out.println("Fetched all passwords for userId: " + userId);
+
+        return list;
+    }
+
+    // -------- VIEW SINGLE PASSWORD --------
+    public String getPasswordByAccount(int userId, String accountName) {
+
+        String encrypted = passwordDAO.getPasswordByAccount(userId, accountName);
+
+        if (encrypted == null) {
+            System.out.println("No password found for userId: " + userId +
+                               ", account: " + accountName);
+            return null;
+        }
+
+        // decrypt before returning
+        return PasswordUtil.decrypt(encrypted);
+    }
+
+    // -------- UPDATE PASSWORD --------
+    public boolean updatePassword(int userId,
+                                  String accountName,
+                                  String newPassword) {
+
+        String encrypted = PasswordUtil.encrypt(newPassword);
+
+        boolean result =
+                passwordDAO.updatePassword(userId, accountName, encrypted);
+
+        if (result) {
+            System.out.println("Password updated for userId: " + userId +
+                               ", account: " + accountName);
+        } else {
+            System.out.println("Failed to update password for userId: " + userId +
+                               ", account: " + accountName);
+        }
+
+        return result;
+    }
+
+    // -------- DELETE PASSWORD --------
+    public boolean deletePassword(int userId, String accountName) {
+
+        boolean result =
+                passwordDAO.deletePassword(userId, accountName);
+
+        if (result) {
+            System.out.println("Password deleted for userId: " + userId +
+                               ", account: " + accountName);
+        } else {
+            System.out.println("Failed to delete password for userId: " + userId +
+                               ", account: " + accountName);
+        }
+
+        return result;
+    }
+
+    // -------- PASSWORD GENERATOR --------
+    public String generatePassword(
+            int length,
+            boolean upper,
+            boolean numbers,
+            boolean special) {
+
+        String generated =
+                PasswordGeneratorUtil.generatePassword(
+                        length, upper, numbers, special);
+
+        System.out.println("Password generated (length=" + length +
+                           ", upper=" + upper +
+                           ", numbers=" + numbers +
+                           ", special=" + special + ")");
+
+        return generated;
+    }
+
+    // -------- SEARCH PASSWORDS --------
+    public List<PasswordEntry> searchPasswords(int userId, String keyword) {
+
+        List<PasswordEntry> list =
+                passwordDAO.searchPasswords(userId, keyword);
+
+        System.out.println("Password search performed for userId: " + userId +
+                           ", keyword: " + keyword);
+
+        return list;
+    }
+}

@@ -1,0 +1,141 @@
+package com.revature.service;
+
+
+import java.util.List;
+
+import com.revature.DAO.PasswordDAO;
+import com.revature.model.PasswordEntry;
+import com.revature.util.PasswordGeneratorUtil;
+import com.revature.util.PasswordUtil;
+
+import org.apache.log4j.Logger;
+
+public class PasswordService {
+
+    // -------- LOGGER --------
+    private static final Logger logger =
+            Logger.getLogger(PasswordService.class);
+
+    // -------- DAO --------
+    private PasswordDAO passwordDAO = new PasswordDAO();
+
+    // -------- ADD PASSWORD --------
+    public boolean addPassword(
+            int userId,
+            String accountName,
+            String username,
+            String password) {
+
+        PasswordEntry entry = new PasswordEntry();
+        entry.setUserId(userId);
+        entry.setAccountName(accountName);
+        entry.setUsername(username);
+        entry.setPassword(PasswordUtil.encrypt(password));
+
+        boolean result = passwordDAO.addPassword(entry);
+
+        if (result) {
+            logger.info("Password added for userId: " + userId +
+                        ", account: " + accountName);
+        } else {
+            logger.error("Failed to add password for userId: " + userId +
+                         ", account: " + accountName);
+        }
+
+        return result;
+    }
+
+    // -------- VIEW ALL PASSWORDS --------
+    public List<PasswordEntry> getAllPasswords(int userId) {
+
+        List<PasswordEntry> list = passwordDAO.getAllPasswords(userId);
+
+        logger.info("Fetched all passwords for userId: " + userId);
+
+        return list;
+    }
+
+    // -------- VIEW SINGLE PASSWORD --------
+    public String getPasswordByAccount(int userId, String accountName) {
+
+        String encrypted = passwordDAO.getPasswordByAccount(userId, accountName);
+
+        if (encrypted == null) {
+            return null;
+        }
+
+        // decrypt before returning
+        return PasswordUtil.decrypt(encrypted);
+    }
+
+
+    // -------- UPDATE PASSWORD --------
+    public boolean updatePassword(int userId,
+                                  String accountName,
+                                  String newPassword) {
+
+        String encrypted = PasswordUtil.encrypt(newPassword);
+
+        boolean result =
+                passwordDAO.updatePassword(userId, accountName, encrypted);
+
+        if (result) {
+            logger.info("Password updated for userId: " + userId +
+                        ", account: " + accountName);
+        } else {
+            logger.error("Failed to update password for userId: " + userId +
+                         ", account: " + accountName);
+        }
+
+        return result;
+    }
+
+    // -------- DELETE PASSWORD --------
+    public boolean deletePassword(int userId, String accountName) {
+
+        boolean result =
+                passwordDAO.deletePassword(userId, accountName);
+
+        if (result) {
+            logger.info("Password deleted for userId: " + userId +
+                        ", account: " + accountName);
+        } else {
+            logger.error("Failed to delete password for userId: " + userId +
+                         ", account: " + accountName);
+        }
+
+        return result;
+    }
+
+    // -------- PASSWORD GENERATOR --------
+    public String generatePassword(
+            int length,
+            boolean upper,
+            boolean numbers,
+            boolean special) {
+
+        String generated =
+                PasswordGeneratorUtil.generatePassword(
+                        length, upper, numbers, special);
+
+        logger.info("Password generated (length=" + length +
+                    ", upper=" + upper +
+                    ", numbers=" + numbers +
+                    ", special=" + special + ")");
+
+        return generated;
+    }
+ // -------- SEARCH PASSWORDS --------
+    public List<PasswordEntry> searchPasswords(int userId, String keyword) {
+
+        List<PasswordEntry> list =
+                passwordDAO.searchPasswords(userId, keyword);
+
+        logger.info("Password search performed for userId: " + userId +
+                    ", keyword: " + keyword);
+
+        return list;
+    }
+
+}
+

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="com.revature.DAO.SecurityDAO"/>
+    <fullyQualifiedTypeName name="com.revature.DAO.VerificationCodeDAO"/>
+    <fullyQualifiedTypeName name="java.util.ArrayList"/>
+    <fullyQualifiedTypeName name="com.revature.DAO.PasswordDAO"/>
+    <fullyQualifiedTypeName name="com.revature.model.PasswordEntry"/>
+    <fullyQualifiedTypeName name="com.revature.util.PasswordGeneratorUtil"/>
+    <fullyQualifiedTypeName name="com.revature.DAO.UserDAO"/>
+    <fullyQualifiedTypeName name="com.revature.util.EmailValidatorUtil"/>
+    <fullyQualifiedTypeName name="com.revature.util.PasswordValidatorUtil"/>
+    <fullyQualifiedTypeName name="com.revature.model.User"/>
+    <fullyQualifiedTypeName name="com.revature.util.PasswordUtil"/>
+    <fullyQualifiedTypeName name="com.revature.util.DBConnection"/>
+</qualifiedTypeNameHistroy>

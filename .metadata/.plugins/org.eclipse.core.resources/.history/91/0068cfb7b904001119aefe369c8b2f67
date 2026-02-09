@@ -1,0 +1,180 @@
+package com.revature.service;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.sql.SQLException;
+
+import com.revature.model.User;
+import com.revature.util.PasswordUtil;
+import com.revature.util.PasswordValidatorUtil;
+import com.revature.util.EmailValidatorUtil;
+
+import org.apache.log4j.Logger;
+
+public class UserService {
+
+    // -------- LOGGER --------
+    private static final Logger logger = Logger.getLogger(UserService.class);
+
+    // -------- DAO --------
+    private UserDAO userDAO = new UserDAO();
+
+    // -------- REGISTER (BOOLEAN VERSION � OPTIONAL) --------
+    public boolean register(String name, String email, String password) {
+
+        if (!EmailValidatorUtil.isValidGmail(email)) {
+            logger.warn("Invalid email format: " + email);
+            return false;
+        }
+
+        if (userDAO.emailExists(email)) {
+            logger.warn("Email already registered: " + email);
+            return false;
+        }
+
+        if (!PasswordValidatorUtil.isValidMasterPassword(password)) {
+            logger.warn("Invalid master password format for email: " + email);
+            return false;
+        }
+
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setMasterPassword(PasswordUtil.encrypt(password));
+
+        boolean result = userDAO.registerUser(user);
+
+        if (result) {
+            logger.info("User registered successfully with email: " + email);
+        } else {
+            logger.error("User registration failed for email: " + email);
+        }
+
+        return result;
+    }
+
+    // -------- REGISTER + RETURN USER ID (MAIN METHOD USED) --------
+    
+    public int registerAndReturnUserId(String name, String email, String password) {
+
+        //  Gmail validation
+        if (!EmailValidatorUtil.isValidGmail(email)) {
+            logger.warn("Invalid email format: " + email);
+            return -1;
+        }
+
+        // Email already exists check
+        if (userDAO.emailExists(email)) {
+            logger.warn("Email already registered: " + email);
+            return -2;
+        }
+
+        // Password validation
+        if (!PasswordValidatorUtil.isValidMasterPassword(password)) {
+            logger.warn("Invalid password format for email: " + email);
+            return -3;
+        }
+
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setMasterPassword(PasswordUtil.encrypt(password));
+
+        boolean result = userDAO.registerUser(user);
+
+        if (!result) {
+            logger.error("Registration failed for email: " + email);
+            return -4;
+        }
+
+        // fetch saved user to get generated userId
+        User savedUser = userDAO.getUserByEmail(email);
+
+        if (savedUser == null) {
+            logger.error("Failed to fetch user after registration for email: " + email);
+            return -4;
+        }
+
+        logger.info("User registered successfully with userId: " + savedUser.getUserId());
+        return savedUser.getUserId();
+    }
+
+    // -------- LOGIN --------
+    public User login(String email, String password) {
+
+        User user = userDAO.login(email, PasswordUtil.encrypt(password));
+
+        if (user != null) {
+            logger.info("Login successful for email: " + email);
+        } else {
+            logger.warn("Login failed for email: " + email);
+        }
+
+        return user;
+    }
+
+    // -------- RESET MASTER PASSWORD --------
+    public boolean resetPassword(int userId, String newPassword) {
+
+        if (!PasswordValidatorUtil.isValidMasterPassword(newPassword)) {
+            logger.warn("Invalid master password format during reset for userId: " + userId);
+            return false;
+        }
+
+        boolean result = userDAO.updateMasterPassword(
+                userId, PasswordUtil.encrypt(newPassword));
+
+        if (result) {
+            logger.info("Master password reset successful for userId: " + userId);
+        } else {
+            logger.error("Master password reset failed for userId: " + userId);
+        }
+
+        return result;
+    }
+
+    // -------- GET USER BY EMAIL --------
+    public User getUserByEmail(String email) {
+
+        User user = userDAO.getUserByEmail(email);
+
+        if (user != null) {
+            logger.info("User fetched by email: " + email);
+        } else {
+            logger.warn("No user found with email: " + email);
+        }
+
+        return user;
+    }
+
+    // -------- UPDATE PROFILE --------
+    public boolean updateProfile(int userId, String name, String email) {
+
+        boolean result = userDAO.updateProfile(userId, name, email);
+
+        if (result) {
+            logger.info("Profile updated for userId: " + userId);
+        } else {
+            logger.error("Profile update failed for userId: " + userId);
+        }
+
+        return result;
+    }
+    public boolean isEmailValidForRegister(String email) {
+
+        if (!EmailValidatorUtil.isValidGmail(email)) {
+            return false;
+        }
+
+        if (userDAO.emailExists(email)) {
+            return false;
+        }
+
+        return true;
+    }
+
+}
+
